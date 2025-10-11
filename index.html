@@ -47,7 +47,9 @@ window.go = async () => {
       ]
     })
   });
-  const recipe = JSON.parse((await reply.json()).choices[0].message.content);
+  let raw = (await reply.json()).choices[0].message.content;
+raw = raw.replace(/```json|```/g,'').trim();   // remove markdown
+const recipe = JSON.parse(raw);
 
   // 3. price
   let cost = 0;
