@@ -17,39 +17,37 @@
       --font-head:  'Playfair Display', serif;
       --font-body:  'Poppins', sans-serif;
     }
-
-    /* ---------- GLOBAL ---------- */
     @import url('https://fonts.googleapis.com/css2?family=Playfair Display:wght@700&family=Poppins:wght@400;600&display=swap');
     *{box-sizing:border-box;margin:0;padding:0;}
     html{font-size:18px;} /* big base */
     body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem 1rem;line-height:1.6;}
     img{max-width:100%;border-radius:var(--radius);}
-
-    /* ---------- CARD ---------- */
     .container{max-width:520px;width:100%;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:2.5rem 2rem;}
     h1{font-family:var(--font-head);font-size:2.2rem;color:var(--accent);text-align:center;margin-bottom:.5rem;}
     .tagline{font-size:1.1rem;text-align:center;margin-bottom:2rem;}
-
-    /* ---------- FORM ---------- */
     label{font-size:1rem;font-weight:600;margin-bottom:.5rem;display:block;}
     textarea{width:100%;min-height:120px;border:3px solid var(--accent2);border-radius:12px;padding:1rem;font-size:1.1rem;resize:vertical;transition:border .3s;}
     textarea:focus{outline:none;border-color:var(--accent);}
     button{width:100%;padding:1rem;font-size:1.25rem;font-weight:600;color:#fff;background:var(--accent);border:none;border-radius:12px;cursor:pointer;transition:background .3s;margin-top:1rem;}
     button:hover{background:#600000;}
-
-    /* ---------- RESULT CARD ---------- */
     #out{margin-top:2rem;}
     .card{background:var(--accent2);border-radius:var(--radius);padding:1.5rem;font-size:1.1rem;}
     .price{font-size:1.75rem;font-weight:700;color:var(--accent);margin-bottom:.5rem;}
     .code{font-family:monospace;background:var(--card);padding:3px 6px;border-radius:6px;font-weight:600;}
     .card p{margin:.4rem 0;}
-
-    /* ---------- MOBILE TWEAKS ---------- */
     @media (max-width:600px){
       html{font-size:16px;}
       .container{padding:1.5rem 1rem;}
       h1{font-size:1.8rem;}
     }
+    /* ---------- LOADER ---------- */
+    #loader{text-align:center;}
+    .spinner{width:40px;height:40px;border:4px solid var(--accent2);border-top:4px solid var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 1rem;}
+    @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+    .prog-bar{width:100%;height:10px;background:var(--accent2);border-radius:5px;overflow:hidden;margin:.5rem 0;}
+    #progress{height:100%;background:var(--accent);width:0%;transition:width .2s;}
+    #prog-txt{font-size:.95rem;}
+    .error-card{background:#ffe6e6;border:2px solid var(--accent);}
   </style>
 </head>
 <body>
@@ -72,6 +70,10 @@ import CryptoJS from 'https://cdn.skypack.dev/crypto-js';
 const OR_KEY        = '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'; // permanent OR key
 const STAFF_PASSWORD = 'myFlorist123';
 
+/* ==========  FRONT-DOOR VALIDATOR  ========== 
+   Tweak these caps / lists to change allowed limits */
+const MAX_TOTAL  = 20;                    // absolute safety cap (change here)
+
 window.go = async () => {
   const prompt = document.getElementById('prompt').value;
   document.getElementById('out').innerHTML = '<div class="card">Working…</div>';
@@ -79,7 +81,41 @@ window.go = async () => {
   // 1. load rules
   const rules = await (await fetch('rules.json')).json();
 
-  // 2. ask OpenRouter (DeepSeek-free today)
+  /* ---- validator: counts & colours ---- */
+  const userLower  = prompt.toLowerCase();
+
+  // build regex from allowed lists (easy to edit)
+  const flowerWords = rules.allowedFlowers.join('|');   // allowed flower names
+  const fruitWords  = rules.allowedFruits.join('|');    // allowed fruit names
+  const colourWords = rules.allowedColors.join('|');    // allowed colours
+
+  // count flowers / fruits user asked for
+  const flowerCount = (userLower.match(new RegExp(`\\b(\\d+)\\s+(?:${flowerWords})`,'g')) || [])
+                        .reduce((sum,m)=>sum+Number(m.split(' ')[0]),0);
+  const fruitCount  = (userLower.match(new RegExp(`\\b(\\d+)\\s+(?:${fruitWords})`,'g')) || [])
+                        .reduce((sum,m)=>sum+Number(m.split(' ')[0]),0);
+
+  // detect unknown colours
+  const colourHits = rules.allowedColors.filter(c=> userLower.includes(c.toLowerCase()));
+  const unknownColour = userLower.match(new RegExp(`\\b(${colourWords}|red|blue|green|yellow|pink|white|pastel|burgundy|maroon|cream|peach)\\b`,'gi')) &&
+                        userLower.match(new RegExp(`\\b(${colourWords}|red|blue|green|yellow|pink|white|pastel|burgundy|maroon|cream|peach)\\b`,'gi'))
+                               .some(c=> !rules.allowedColors.map(x=>x.toLowerCase()).includes(c.toLowerCase()));
+
+  // ---- decision ----
+  if(flowerCount>rules.maxFlowers || fruitCount>rules.maxFruits || (flowerCount+fruitCount)>MAX_TOTAL || unknownColour){
+    document.getElementById('out').innerHTML =
+     `<div class="card error-card">
+        <strong>⚠️ Oops!</strong><br>
+        ${flowerCount>rules.maxFlowers ? `Max flowers allowed: ${rules.maxFlowers}. ` : ''}
+        ${fruitCount>rules.maxFruits  ? `Max fruits allowed: ${rules.maxFruits}. ` : ''}
+        ${(flowerCount+fruitCount)>MAX_TOTAL ? `Total items too high (max ${MAX_TOTAL}). ` : ''}
+        ${unknownColour ? `Only these colours: ${rules.allowedColors.join(', ')}. ` : ''}
+        <br><small>Please adjust your description and try again.</small>
+      </div>`;
+    return; // stop here — AI never called
+  }
+
+  // 2. ask OpenRouter (DeepSeek-free tier today)
   const reply = await fetch('https://openrouter.ai/api/v1/chat/completions',{
     method : 'POST',
     headers: {
@@ -89,7 +125,7 @@ window.go = async () => {
       'X-Title'       : 'Flower-AI'
     },
     body: JSON.stringify({
-      model: 'deepseek/deepseek-r1-distill-llama-70b:free',
+      model: 'deepseek/deepseek-r1-distill-llama-70b:free',   // free today
       messages:[
         {role:'system', content:`You are a florist AI. Obey these rules:\n${JSON.stringify(rules,null,2)}\nReturn ONLY this JSON shape:\n{"flowers":[{"type":"","color":"","qty":}],"fruits":[{}],"style":""}`},
         {role:'user',   content: prompt}
@@ -100,31 +136,64 @@ window.go = async () => {
   raw = raw.replace(/```json|```/g,'').trim();
   const recipe = JSON.parse(raw);
 
-  // 3. price
+  // 3. price   (edit prices here ↓↓↓)
   let cost = 0;
-  recipe.flowers.forEach(f => cost += f.qty * rules.priceStem[f.type]);
-  recipe.fruits.forEach(fr => cost += fr.qty * rules.priceFruit[fr.type]);
-  cost = Math.round(cost * rules.profit * 100) / 100;
+  recipe.flowers.forEach(f => cost += f.qty * rules.priceStem[f.type]); // stem prices
+  recipe.fruits.forEach(fr => cost += fr.qty * rules.priceFruit[fr.type]); // fruit prices
+  cost = Math.round(cost * rules.profit * 100) / 100; // profit margin
 
-  // 4. image (Pollinations, no key)
+  // 4. image with loader + progress (Pollinations, no key)
   const detailPrompt = `bouquet: ${recipe.flowers.map(f=>`${f.qty} ${f.color} ${f.type}`).join(', ')}, fruits: ${recipe.fruits.map(fr=>`${fr.qty} ${fr.type}`).join(', ')}, ${recipe.style}, maroon and off-white palette, 4k, photorealistic`;
-  const imgUrl    = `https://image.pollinations.ai/prompt/${encodeURIComponent(detailPrompt)}?width=1024&height=1024&nologo=1`;
 
-  // 5. encrypt & save
-  const cipher = CryptoJS.AES.encrypt(JSON.stringify({recipe,cost,imgPrompt:detailPrompt}), STAFF_PASSWORD).toString();
-  const code   = CryptoJS.lib.WordArray.random(4).toString();
-  const gistPayload = {description:'new order',public:true,files:{[`${code}.txt`]:{content:cipher}}};
-  await fetch('https://api.github.com/gists',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(gistPayload)});
-
-  // 6. pretty result
-  document.getElementById('out').innerHTML = `
+  // inject loader DOM
+  const outDiv = document.getElementById('out');
+  outDiv.innerHTML = `
     <div class="card">
-      <img src="${imgUrl}" alt="bouquet preview">
-      <div class="price">Total €${cost}</div>
-      <p><strong>Flowers:</strong> ${recipe.flowers.map(f=>`${f.qty} ${f.color} ${f.type}`).join(', ')}</p>
-      <p><strong>Fruits:</strong> ${recipe.fruits.map(fr=>`${fr.qty} ${fr.type}`).join(', ')}</p>
-      <p><strong>Shop code:</strong> <span class="code">${cipher.slice(0,8)}…</span><br><small>Show this at checkout</small></p>
+      <div id="loader">
+        <div class="spinner"></div>
+        <div class="prog-bar"><div id="progress" style="width:0%"></div></div>
+        <p id="prog-txt">0 % – generating image…</p>
+      </div>
     </div>`;
+
+  // progress bar 0→100 % (fake smooth)
+  let progress = 0;
+  const progBar = document.getElementById('progress');
+  const progTxt = document.getElementById('prog-txt');
+  const progInt = setInterval(()=>{
+    progress += 2;
+    progBar.style.width = progress + '%';
+    progTxt.textContent  = progress + ' % – generating image…';
+    if(progress >= 100){ clearInterval(progInt); progTxt.textContent = 'Almost done…'; }
+  }, 60);
+
+  // fetch image
+  const img = new Image();
+  img.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(detailPrompt)}?width=1024&height=1024&nologo=1`;
+  img.onload = ()=>{
+    clearInterval(progInt);
+    // 5. encrypt & save
+    const cipher = CryptoJS.AES.encrypt(JSON.stringify({recipe,cost,imgPrompt:detailPrompt}), STAFF_PASSWORD).toString();
+    const code   = CryptoJS.lib.WordArray.random(4).toString();
+    const gistPayload = {description:'new order',public:true,files:{[`${code}.txt`]:{content:cipher}}};
+    return fetch('https://api.github.com/gists',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(gistPayload)})
+      .then(()=>{
+        // 6. final screen (currency = LKR)
+        document.getElementById('out').innerHTML = `
+          <div class="card">
+            <img src="${img.src}" alt="bouquet preview">
+            <div class="price">Total LKR ${cost}</div>
+            <p><strong>Flowers:</strong> ${recipe.flowers.map(f=>`${f.qty} ${f.color} ${f.type}`).join(', ')}</p>
+            <p><strong>Fruits:</strong> ${recipe.fruits.map(fr=>`${fr.qty} ${fr.type}`).join(', ')}</p>
+            <p><strong>Shop code:</strong> <span class="code">${cipher.slice(0,8)}…</span><br><small>Show this at checkout</small></p>
+          </div>`;
+      });
+  };
+  img.onerror = ()=>{
+    clearInterval(progInt);
+    document.getElementById('out').innerHTML = `<div class="card error-card">Image failed to load – please try again.</div>`;
+  };
+
 };
 </script>
 </body>
