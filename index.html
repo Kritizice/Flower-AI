@@ -127,7 +127,7 @@ window.go = async () => {
       'X-Title'       : 'Flower-AI'
     },
     body: JSON.stringify({
-      model: 'mistralai/mistral-7b-instruct:free',
+      model: 'google/gemini-2.0-flash-exp:free',
       messages:[
         {role:'system', content:`You are a florist AI. Obey these rules:\n${JSON.stringify(rules,null,2)}\nReturn ONLY this JSON shape:\n{"flowers":[{"type":"","color":"","qty":}],"fruits":[{}],"style":""}`},
         {role:'user',   content: prompt}
