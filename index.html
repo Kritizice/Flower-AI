@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>AI Bouquet Designer</title>
+  <title>Flora AI✨</title>
   <style>
     :root{--bg:#fdf6f0;--card:#fff;--accent:#800000;--accent2:#f5e6e6;--text:#3d2914;--shadow:0 6px 30px rgba(0,0,0,.08);--radius:20px;--font-head:'Playfair Display',serif;--font-body:'Poppins',sans-serif;}
     @import url('https://fonts.googleapis.com/css2?family=Playfair Display:wght@700&family=Poppins:wght@400;600&display=swap');
@@ -13,7 +13,7 @@
     label{font-size:1rem;font-weight:600;margin-bottom:.5rem;display:block;}textarea{width:100%;min-height:120px;border:3px solid var(--accent2);border-radius:12px;padding:1rem;font-size:1.1rem;resize:vertical;transition:border .3s;}textarea:focus{outline:none;border-color:var(--accent);}
     button{width:100%;padding:1rem;font-size:1.25rem;font-weight:600;color:#fff;background:var(--accent);border:none;border-radius:12px;cursor:pointer;transition:background .3s;margin-top:1rem;}button:hover{background:#600000;}
     #out{margin-top:2rem;}.card{background:var(--accent2);border-radius:var(--radius);padding:1.5rem;font-size:1.1rem;font-family:Optima, sans-serif;}/*Candara font for details*/
-    .price-row{display:flex;justify-content:space-between;align-items:center;}.price{font-size:8.5rem;font-weight:950;color:var(--accent);}.code{font-family:monospace;background:var(--card);padding:3px 6px;border-radius:6px;font-weight:600;}.card p{margin:.4rem 0;}
+    .price-row{display:flex;justify-content:space-between;align-items:center;}.price{font-size:10rem;font-weight:1250;color:var(--accent);}.code{font-family:monospace;background:var(--card);padding:3px 6px;border-radius:6px;font-weight:600;}.card p{margin:.4rem 0;}
     @media (max-width:600px){html{font-size:16px;}.container{padding:1.5rem 1rem;}h1{font-size:1.8rem;}}
     .error-card{background:#ffe6e6;border:2px solid var(--accent);}#loader{text-align:center;}.spinner{width:40px;height:40px;border:4px solid var(--accent2);border-top:4px solid var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 1rem;}@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
     .prog-bar{width:100%;height:10px;background:var(--accent2);border-radius:5px;overflow:hidden;margin:.5rem 0;}#progress{height:100%;background:var(--accent);width:0%;transition:width .2s;}#prog-txt{font-size:.95rem;}
@@ -23,10 +23,10 @@
 <body>
 
 <div class="container">
-  <h1>Design Your Dream Bouquet</h1>
+  <h1>Design Your Dream Bouquet with FLORA AI</h1>
   <p class="tagline">Tell us your style, colours, flowers or fruits — we’ll craft it!</p>
 
-  <label for="prompt">Your idea</label>
+  <label for="prompt">FLORA AI✨ by Beniviah </label>
   <textarea id="prompt" placeholder="Example: 10 red roses and 20 strawberries in red wrapping"></textarea>
 
   <button onclick="go()">Generate Bouquet</button>
@@ -44,18 +44,18 @@ const STAFF_PASSWORD = 'myFlorist123';
 // Change single-unit prices here ↓↓↓ (LKR per 1 item)
 const FLOWER_PRICE = {
   rose: 150,        // LKR 150 each
-  tulip: 120,
+  Sunflower: 120,
   chrysanthemum: 100,
   carnation: 110,
   peony: 200,
-  lisianthus: 130
+  baby's breath: 50
 };
 const FRUIT_PRICE = {
   strawberry: 40,   // LKR 40 each
   blueberry: 30,
-  raspberry: 45,
+  apple: 45,
   grape: 35,
-  physalis: 50
+  kiwi: 50
 };
 const PROFIT_MUL   = 1.45;                // 45 % margin
 const MAX_FLOWERS  = 5000;                // user max (change here)
