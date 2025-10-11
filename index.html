@@ -2,56 +2,84 @@
 <html>
 <head>
   <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>AI Bouquet Designer</title>
   <style>
+    /* ---------- COLOUR & FONT TOKENS ---------- */
     :root{
-  --bg:       #fff9fb;
-  --card:     #ffffff;
-  --accent:   #e91e63;
-  --accent2:  #fce4ec;
-  --text:     #4a4a4a;
-  --shadow:   0 4px 20px rgba(0,0,0,.08);
-  --radius:   16px;
-  --font:     'Poppins', sans-serif;
-}
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap');
-*{box-sizing:border-box;margin:0;padding:0;font-family:var(--font);}
-body{background:var(--bg);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;}
-.container{max-width:480px;width:100%;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:2rem;}
-h2{color:var(--accent);font-weight:600;margin-bottom:1rem;text-align:center;}
-label{font-size:.9rem;color:var(--text);margin-bottom:.5rem;display:block;}
-textarea{width:100%;min-height:100px;border:2px solid var(--accent2);border-radius:8px;padding:.75rem;font-size:1rem;resize:vertical;transition:border .2s;}
-textarea:focus{outline:none;border-color:var(--accent);}
-button{width:100%;padding:.85rem;font-size:1.1rem;font-weight:600;color:#fff;background:var(--accent);border:none;border-radius:8px;cursor:pointer;transition:background .2s;}
-button:hover{background:#d81b60;}
-#out{margin-top:1.5rem;}
-.card{background:var(--accent2);border-radius:var(--radius);padding:1rem;margin-top:1rem;line-height:1.6;}
-.card img{width:100%;border-radius:8px;margin-bottom:.75rem;}
-.price{font-size:1.4rem;font-weight:600;color:var(--accent);}
-.code{font-family:monospace;background:#fff;padding:2px 6px;border-radius:4px;}
+      --bg:         #fdf6f0;       /* off-white */
+      --card:       #ffffff;
+      --accent:     #800000;       /* maroon */
+      --accent2:    #f5e6e6;       /* light maroon tint */
+      --text:       #3d2914;       /* dark brown */
+      --shadow:     0 6px 30px rgba(0,0,0,.08);
+      --radius:     20px;
+      --font-head:  'Playfair Display', serif;
+      --font-body:  'Poppins', sans-serif;
+    }
+
+    /* ---------- GLOBAL ---------- */
+    @import url('https://fonts.googleapis.com/css2?family=Playfair Display:wght@700&family=Poppins:wght@400;600&display=swap');
+    *{box-sizing:border-box;margin:0;padding:0;}
+    html{font-size:18px;} /* big base */
+    body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem 1rem;line-height:1.6;}
+    img{max-width:100%;border-radius:var(--radius);}
+
+    /* ---------- CARD ---------- */
+    .container{max-width:520px;width:100%;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:2.5rem 2rem;}
+    h1{font-family:var(--font-head);font-size:2.2rem;color:var(--accent);text-align:center;margin-bottom:.5rem;}
+    .tagline{font-size:1.1rem;text-align:center;margin-bottom:2rem;}
+
+    /* ---------- FORM ---------- */
+    label{font-size:1rem;font-weight:600;margin-bottom:.5rem;display:block;}
+    textarea{width:100%;min-height:120px;border:3px solid var(--accent2);border-radius:12px;padding:1rem;font-size:1.1rem;resize:vertical;transition:border .3s;}
+    textarea:focus{outline:none;border-color:var(--accent);}
+    button{width:100%;padding:1rem;font-size:1.25rem;font-weight:600;color:#fff;background:var(--accent);border:none;border-radius:12px;cursor:pointer;transition:background .3s;margin-top:1rem;}
+    button:hover{background:#600000;}
+
+    /* ---------- RESULT CARD ---------- */
+    #out{margin-top:2rem;}
+    .card{background:var(--accent2);border-radius:var(--radius);padding:1.5rem;font-size:1.1rem;}
+    .price{font-size:1.75rem;font-weight:700;color:var(--accent);margin-bottom:.5rem;}
+    .code{font-family:monospace;background:var(--card);padding:3px 6px;border-radius:6px;font-weight:600;}
+    .card p{margin:.4rem 0;}
+
+    /* ---------- MOBILE TWEAKS ---------- */
+    @media (max-width:600px){
+      html{font-size:16px;}
+      .container{padding:1.5rem 1rem;}
+      h1{font-size:1.8rem;}
+    }
   </style>
 </head>
 <body>
 
-<h2>Describe your dream bouquet</h2>
-<textarea id="prompt" placeholder="e.g. romantic red and white with strawberries"></textarea><br>
-<button onclick="go()">Generate</button>
-<div id="out"></div>
+<div class="container">
+  <h1>Design Your Dream Bouquet</h1>
+  <p class="tagline">Tell us your style, colours, flowers or fruits — we’ll craft it!</p>
+
+  <label for="prompt">Your idea</label>
+  <textarea id="prompt" placeholder="e.g. romantic red and white with strawberries"></textarea>
+
+  <button onclick="go()">Generate Bouquet</button>
+
+  <div id="out"></div>
+</div>
 
 <script type="module">
 import CryptoJS from 'https://cdn.skypack.dev/crypto-js';
 
-const OR_KEY        = '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'; // your permanent OR key
+const OR_KEY        = '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'; // permanent OR key
 const STAFF_PASSWORD = 'myFlorist123';
 
 window.go = async () => {
   const prompt = document.getElementById('prompt').value;
-  document.getElementById('out').innerText = 'Working…';
+  document.getElementById('out').innerHTML = '<div class="card">Working…</div>';
 
-  // 1. load shop rules
+  // 1. load rules
   const rules = await (await fetch('rules.json')).json();
 
-  // 2. ask OpenRouter (DeepSeek-free tier today)
+  // 2. ask OpenRouter (DeepSeek-free today)
   const reply = await fetch('https://openrouter.ai/api/v1/chat/completions',{
     method : 'POST',
     headers: {
@@ -61,7 +89,7 @@ window.go = async () => {
       'X-Title'       : 'Flower-AI'
     },
     body: JSON.stringify({
-      model: 'deepseek/deepseek-r1-distill-llama-70b:free',   // free today
+      model: 'deepseek/deepseek-r1-distill-llama-70b:free',
       messages:[
         {role:'system', content:`You are a florist AI. Obey these rules:\n${JSON.stringify(rules,null,2)}\nReturn ONLY this JSON shape:\n{"flowers":[{"type":"","color":"","qty":}],"fruits":[{}],"style":""}`},
         {role:'user',   content: prompt}
@@ -69,8 +97,8 @@ window.go = async () => {
     })
   });
   let raw = (await reply.json()).choices[0].message.content;
-raw = raw.replace(/```json|```/g,'').trim();   // remove markdown
-const recipe = JSON.parse(raw);
+  raw = raw.replace(/```json|```/g,'').trim();
+  const recipe = JSON.parse(raw);
 
   // 3. price
   let cost = 0;
@@ -79,25 +107,25 @@ const recipe = JSON.parse(raw);
   cost = Math.round(cost * rules.profit * 100) / 100;
 
   // 4. image (Pollinations, no key)
-  const imgPrompt = `bouquet, ${recipe.flowers.length} flowers, ${recipe.fruits.length} fruits, ${recipe.style}, pastel background, 4k`;
-  const imgUrl    = `https://image.pollinations.ai/prompt/${encodeURIComponent(imgPrompt)}?width=1024&height=1024&nologo=1`;
+  const detailPrompt = `bouquet: ${recipe.flowers.map(f=>`${f.qty} ${f.color} ${f.type}`).join(', ')}, fruits: ${recipe.fruits.map(fr=>`${fr.qty} ${fr.type}`).join(', ')}, ${recipe.style}, maroon and off-white palette, 4k, photorealistic`;
+  const imgUrl    = `https://image.pollinations.ai/prompt/${encodeURIComponent(detailPrompt)}?width=1024&height=1024&nologo=1`;
 
   // 5. encrypt & save
-  const cipher = CryptoJS.AES.encrypt(JSON.stringify({recipe,cost,imgPrompt}), STAFF_PASSWORD).toString();
+  const cipher = CryptoJS.AES.encrypt(JSON.stringify({recipe,cost,imgPrompt:detailPrompt}), STAFF_PASSWORD).toString();
   const code   = CryptoJS.lib.WordArray.random(4).toString();
   const gistPayload = {description:'new order',public:true,files:{[`${code}.txt`]:{content:cipher}}};
   await fetch('https://api.github.com/gists',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(gistPayload)});
 
-  // 6. display
+  // 6. pretty result
   document.getElementById('out').innerHTML = `
-    <img src="${imgUrl}" width="300"><br>
-    <b>€${cost}</b><br>
-    Flowers: ${recipe.flowers.map(f=>`${f.qty} ${f.color} ${f.type}`).join(', ')}<br>
-    Fruits: ${recipe.fruits.map(fr=>`${fr.qty} ${fr.type}`).join(', ')}<br>
-    Your secret code: <code>${cipher.slice(0,8)}…</code>`;
+    <div class="card">
+      <img src="${imgUrl}" alt="bouquet preview">
+      <div class="price">Total €${cost}</div>
+      <p><strong>Flowers:</strong> ${recipe.flowers.map(f=>`${f.qty} ${f.color} ${f.type}`).join(', ')}</p>
+      <p><strong>Fruits:</strong> ${recipe.fruits.map(fr=>`${fr.qty} ${fr.type}`).join(', ')}</p>
+      <p><strong>Shop code:</strong> <span class="code">${cipher.slice(0,8)}…</span><br><small>Show this at checkout</small></p>
+    </div>`;
 };
 </script>
 </body>
-</html> 
-
-
+</html>
