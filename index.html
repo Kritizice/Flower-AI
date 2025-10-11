@@ -19,52 +19,59 @@
 
 <script type="module">
 import CryptoJS from 'https://cdn.skypack.dev/crypto-js';
-const GEMINI_KEY = 'AIzaSyB7fbwl3M7xOOstXXHLOTGhwgno5-yfktw';   // ← fresh key
-const STAFF_PASSWORD = 'myFlorist123';              // ← tiny space added to force deploy
+
+const OR_KEY        = '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'; // ← your permanent OR key
+const STAFF_PASSWORD = 'myFlorist123';
 
 window.go = async () => {
   const prompt = document.getElementById('prompt').value;
   document.getElementById('out').innerText = 'Working…';
 
-  // 1. structured recipe from Gemini
+  // 1. load shop rules
   const rules = await (await fetch('rules.json')).json();
-  const gptResp = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_KEY}`,
-    {method:'POST',
-     headers:{'Content-Type':'application/json'},
-     body:JSON.stringify({
-       contents:[{parts:[{text:`You are a florist AI. Obey these rules:
-${JSON.stringify(rules,null,2)}
-Return ONLY a JSON object like:
-{"flowers":[{"type":"","color":"","qty":}],"fruits":[{}],"style":"<short visual style>"}`}]},
-                  {parts:[{text:prompt}]}]})});
-  const recipeTxt = (await gptResp.json()).candidates[0].content.parts[0].text
-                    .replace(/```json|```/g,'');
-  const r = JSON.parse(recipeTxt);
 
-  // 2. price
-  let cost=0;
-  r.flowers.forEach(f=> cost += f.qty * rules.priceStem[f.type]);
-  r.fruits.forEach(fr=> cost += fr.qty * rules.priceFruit[fr.type]);
-  cost = Math.round(cost * rules.profit * 100)/100;
+  // 2. ask OpenRouter (Gemini-2-free tier)
+  const reply = await fetch('https://openrouter.ai/api/v1/chat/completions',{
+    method : 'POST',
+    headers: {
+      'Content-Type'  : 'application/json',
+      'Authorization' : `Bearer ${OR_KEY}`,
+      'HTTP-Referer'  : 'https://kritizice.github.io',
+      'X-Title'       : 'Flower-AI'
+    },
+    body: JSON.stringify({
+      model: 'google/gemini-2.0-flash-exp:free',
+      messages:[
+        {role:'system', content:`You are a florist AI. Obey these rules:\n${JSON.stringify(rules,null,2)}\nReturn ONLY this JSON shape:\n{"flowers":[{"type":"","color":"","qty":}],"fruits":[{}],"style":""}`},
+        {role:'user',   content: prompt}
+      ]
+    })
+  });
+  const recipe = JSON.parse((await reply.json()).choices[0].message.content);
 
-  // 3. image (Pollinations, no key needed)
-  const safePrompt = `bouquet, ${r.totalFlowers} flowers, ${r.totalFruits} fruits, ${r.style}, pastel background, 4k`;
-  const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(safePrompt)}?width=1024&height=1024&nologo=1`;
+  // 3. price
+  let cost = 0;
+  recipe.flowers.forEach(f => cost += f.qty * rules.priceStem[f.type]);
+  recipe.fruits.forEach(fr => cost += fr.qty * rules.priceFruit[fr.type]);
+  cost = Math.round(cost * rules.profit * 100) / 100;
 
-  // 4. encrypt & save
-  const cipher = CryptoJS.AES.encrypt(JSON.stringify({recipe:r,cost,imgPrompt:safePrompt}), STAFF_PASSWORD).toString();
-  const code  = CryptoJS.lib.WordArray.random(4).toString(); // 8-char id
+  // 4. image (Pollinations, no key)
+  const imgPrompt = `bouquet, ${recipe.flowers.length} flowers, ${recipe.fruits.length} fruits, ${recipe.style}, pastel background, 4k`;
+  const imgUrl    = `https://image.pollinations.ai/prompt/${encodeURIComponent(imgPrompt)}?width=1024&height=1024&nologo=1`;
+
+  // 5. encrypt & save
+  const cipher = CryptoJS.AES.encrypt(JSON.stringify({recipe,cost,imgPrompt}), STAFF_PASSWORD).toString();
+  const code   = CryptoJS.lib.WordArray.random(4).toString();
   const gistPayload = {description:'new order',public:true,files:{[`${code}.txt`]:{content:cipher}}};
   await fetch('https://api.github.com/gists',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(gistPayload)});
 
-  // 5. show customer
+  // 6. display
   document.getElementById('out').innerHTML = `
-    <img src="${imgUrl}"><br>
+    <img src="${imgUrl}" width="300"><br>
     <b>€${cost}</b><br>
-    Flowers: ${r.flowers.map(f=>`${f.qty} ${f.color} ${f.type}`).join(', ')}<br>
-    Fruits: ${r.fruits.map(fr=>`${fr.qty} ${fr.type}`).join(', ')}<br>
-    Your secret code: <code>${cipher.slice(0,8)}…</code> (show this at checkout)`;
+    Flowers: ${recipe.flowers.map(f=>`${f.qty} ${f.color} ${f.type}`).join(', ')}<br>
+    Fruits: ${recipe.fruits.map(fr=>`${fr.qty} ${fr.type}`).join(', ')}<br>
+    Your secret code: <code>${cipher.slice(0,8)}…</code>`;
 };
 </script>
 </body>
