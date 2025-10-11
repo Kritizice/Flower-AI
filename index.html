@@ -130,7 +130,7 @@ window.go = async () => {
     })
   });
   let raw = (await reply.json()).choices[0].message.content;
-  raw = raw.replace(/```json|```/g,'').trim();
+  raw = raw.slice(raw.indexOf('{'), raw.lastIndexOf('}') + 1); // keep only {…}
   const recipe = JSON.parse(raw);
 
   // 3. price   (edit prices here ↓↓↓)
