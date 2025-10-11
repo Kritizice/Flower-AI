@@ -5,13 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>AI Bouquet Designer</title>
   <style>
-    /* ---------- COLOUR & FONT TOKENS ---------- */
     :root{
-      --bg:         #fdf6f0;       /* off-white */
+      --bg:         #fdf6f0;
       --card:       #ffffff;
-      --accent:     #800000;       /* maroon */
-      --accent2:    #f5e6e6;       /* light maroon tint */
-      --text:       #3d2914;       /* dark brown */
+      --accent:     #800000;
+      --accent2:    #f5e6e6;
+      --text:       #3d2914;
       --shadow:     0 6px 30px rgba(0,0,0,.08);
       --radius:     20px;
       --font-head:  'Playfair Display', serif;
@@ -19,7 +18,7 @@
     }
     @import url('https://fonts.googleapis.com/css2?family=Playfair Display:wght@700&family=Poppins:wght@400;600&display=swap');
     *{box-sizing:border-box;margin:0;padding:0;}
-    html{font-size:18px;} /* big base */
+    html{font-size:18px;}
     body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem 1rem;line-height:1.6;}
     img{max-width:100%;border-radius:var(--radius);}
     .container{max-width:520px;width:100%;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:2.5rem 2rem;}
@@ -40,6 +39,7 @@
       .container{padding:1.5rem 1rem;}
       h1{font-size:1.8rem;}
     }
+    .error-card{background:#ffe6e6;border:2px solid var(--accent);}
     /* ---------- LOADER ---------- */
     #loader{text-align:center;}
     .spinner{width:40px;height:40px;border:4px solid var(--accent2);border-top:4px solid var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 1rem;}
@@ -47,7 +47,6 @@
     .prog-bar{width:100%;height:10px;background:var(--accent2);border-radius:5px;overflow:hidden;margin:.5rem 0;}
     #progress{height:100%;background:var(--accent);width:0%;transition:width .2s;}
     #prog-txt{font-size:.95rem;}
-    .error-card{background:#ffe6e6;border:2px solid var(--accent);}
   </style>
 </head>
 <body>
@@ -57,7 +56,7 @@
   <p class="tagline">Tell us your style, colours, flowers or fruits — we’ll craft it!</p>
 
   <label for="prompt">Your idea</label>
-  <textarea id="prompt" placeholder="e.g. romantic red and white with strawberries"></textarea>
+  <textarea id="prompt" placeholder="e.g. 10 red roses and 5 white strawberries"></textarea>
 
   <button onclick="go()">Generate Bouquet</button>
 
@@ -70,9 +69,8 @@ import CryptoJS from 'https://cdn.skypack.dev/crypto-js';
 const OR_KEY        = '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'; // permanent OR key
 const STAFF_PASSWORD = 'myFlorist123';
 
-/* ==========  FRONT-DOOR VALIDATOR  ========== 
-   Tweak these caps / lists to change allowed limits */
-const MAX_TOTAL  = 20;                    // absolute safety cap (change here)
+/* ==========  FRONT-DOOR VALIDATOR  ========== */
+const MAX_TOTAL  = 20;                    // safety cap (change here)
 
 window.go = async () => {
   const prompt = document.getElementById('prompt').value;
@@ -96,7 +94,6 @@ window.go = async () => {
                         .reduce((sum,m)=>sum+Number(m.split(' ')[0]),0);
 
   // detect unknown colours
-  const colourHits = rules.allowedColors.filter(c=> userLower.includes(c.toLowerCase()));
   const unknownColour = userLower.match(new RegExp(`\\b(${colourWords}|red|blue|green|yellow|pink|white|pastel|burgundy|maroon|cream|peach)\\b`,'gi')) &&
                         userLower.match(new RegExp(`\\b(${colourWords}|red|blue|green|yellow|pink|white|pastel|burgundy|maroon|cream|peach)\\b`,'gi'))
                                .some(c=> !rules.allowedColors.map(x=>x.toLowerCase()).includes(c.toLowerCase()));
@@ -178,13 +175,15 @@ window.go = async () => {
     const gistPayload = {description:'new order',public:true,files:{[`${code}.txt`]:{content:cipher}}};
     return fetch('https://api.github.com/gists',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(gistPayload)})
       .then(()=>{
-        // 6. final screen (currency = LKR)
+        // FINAL DISPLAY: shows exact counts user asked for + final recipe
+        const askedFlowerLines = recipe.flowers.map(f=>`${f.qty} ${f.color} ${f.type}`);
+        const askedFruitLines  = recipe.fruits.map(fr=>`${fr.qty} ${fr.type}`);
         document.getElementById('out').innerHTML = `
           <div class="card">
             <img src="${img.src}" alt="bouquet preview">
             <div class="price">Total LKR ${cost}</div>
-            <p><strong>Flowers:</strong> ${recipe.flowers.map(f=>`${f.qty} ${f.color} ${f.type}`).join(', ')}</p>
-            <p><strong>Fruits:</strong> ${recipe.fruits.map(fr=>`${fr.qty} ${fr.type}`).join(', ')}</p>
+            <p><strong>Flowers (as requested):</strong> ${askedFlowerLines.join(', ')}</p>
+            <p><strong>Fruits (as requested):</strong> ${askedFruitLines.join(', ')}</p>
             <p><strong>Shop code:</strong> <span class="code">${cipher.slice(0,8)}…</span><br><small>Show this at checkout</small></p>
           </div>`;
       });
