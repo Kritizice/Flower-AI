@@ -53,12 +53,10 @@ Return ONLY a JSON object like:
   const imgPrompt = `Professional bouquet photo: ${r.style}. Flowers: ${
     r.flowers.map(f=>`${f.qty} ${f.color} ${f.type}`).join(', ')
   }. Fruits: ${r.fruits.map(fr=>`${fr.qty} ${fr.type}`).join(', ')}. Soft pastel background`;
-  const hf = await fetch(`https://api-inference.huggingface.co/models/${HF_MODEL}`,
-    {method:'POST',
-     headers:{'Authorization': 'Bearer '+ '0000000000000000000'}, // dummy token works for public SDXL
-     body:JSON.stringify({inputs:imgPrompt})});
-  const blob = await hf.blob();
-  const imgUrl = URL.createObjectURL(blob);
+  const imgPrompt = `Professional bouquet photo: ${r.style}. Flowers: ${
+  r.flowers.map(f=>`${f.qty} ${f.color} ${f.type}`).join(', ')
+  }. Fruits: ${r.fruits.map(fr=>`${fr.qty} ${fr.type}`).join(', ')}. Soft pastel background`;
+  const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(imgPrompt)}?width=1024&height=1024&nologo=1`;
 
   // 4.  encrypt & save
   const cipher = CryptoJS.AES.encrypt(JSON.stringify({recipe:r,cost,imgPrompt}), STAFF_PASSWORD).toString();
