@@ -61,7 +61,7 @@ Return ONLY a JSON object like:
   const imgUrl = URL.createObjectURL(blob);
 
   // 4.  encrypt & save
-  const cipher = encrypt(JSON.stringify({recipe:r,cost,imgPrompt}), STAFF_PASSWORD).toString();
+  const cipher = CryptoJS.AES.encrypt(JSON.stringify({recipe:r,cost,imgPrompt}), STAFF_PASSWORD).toString();
   const gistPayload = {description:'new order',public:true,files:{[`${nanoid(8)}.txt`]:{content:cipher}}};
   await fetch('https://api.github.com/gists', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(gistPayload)});
 
