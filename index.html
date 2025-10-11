@@ -19,46 +19,46 @@
 
 <script type="module">
 import CryptoJS from 'https://cdn.skypack.dev/crypto-js';
-const GEMINI_KEY = 'AIzaSyDbq9wXqyTfFVAnjn-_d66SkKYZUJ4mbjI';   // <— replace
-const HF_MODEL = 'stabilityai/stable-diffusion-xl-base-1.0';
-const STAFF_PASSWORD = 'myFlorist123';              // only YOU know this
+const GEMINI_KEY = 'AIzaSyDbq9wXqyTfFVAnjn-_d66SkKYZUJ4mbjI';   // ← paste your NEW key here
+const STAFF_PASSWORD = 'myFlorist123';
 
 window.go = async () => {
   const prompt = document.getElementById('prompt').value;
   document.getElementById('out').innerText = 'Working…';
 
-  // 1.  structured recipe from Gemini
+  // 1. structured recipe from Gemini
+  const rules = await (await fetch('rules.json')).json();
   const gptResp = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_KEY}`,
     {method:'POST',
      headers:{'Content-Type':'application/json'},
      body:JSON.stringify({
        contents:[{parts:[{text:`You are a florist AI. Obey these rules:
-${JSON.stringify(await (await fetch('rules.json')).json(),null,2)}
+${JSON.stringify(rules,null,2)}
 Return ONLY a JSON object like:
 {"flowers":[{"type":"","color":"","qty":}],"fruits":[{}],"style":"<short visual style>"}`}]},
                   {parts:[{text:prompt}]}]})});
-  const recipe = (await gptResp.json()).candidates[0].content.parts[0].text
-                 .replace(/```json|```/g,'');
-  const r = JSON.parse(recipe);
+  const recipeTxt = (await gptResp.json()).candidates[0].content.parts[0].text
+                    .replace(/```json|```/g,'');
+  const r = JSON.parse(recipeTxt);
 
-  // 2.  price
-  const rules = await (await fetch('rules.json')).json();
+  // 2. price
   let cost=0;
   r.flowers.forEach(f=> cost += f.qty * rules.priceStem[f.type]);
   r.fruits.forEach(fr=> cost += fr.qty * rules.priceFruit[fr.type]);
   cost = Math.round(cost * rules.profit * 100)/100;
 
-  // 3.  image
+  // 3. image (Pollinations, no key needed)
   const safePrompt = `bouquet, ${r.totalFlowers} flowers, ${r.totalFruits} fruits, ${r.style}, pastel background, 4k`;
   const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(safePrompt)}?width=1024&height=1024&nologo=1`;
 
-  // 4.  encrypt & save
-  const cipher = CryptoJS.AES.encrypt(JSON.stringify({recipe:r,cost,imgPrompt}), STAFF_PASSWORD).toString();
-  const gistPayload = {description:'new order',public:true,files:{[`${nanoid(8)}.txt`]:{content:cipher}}};
-  await fetch('https://api.github.com/gists', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(gistPayload)});
+  // 4. encrypt & save
+  const cipher = CryptoJS.AES.encrypt(JSON.stringify({recipe:r,cost,imgPrompt:safePrompt}), STAFF_PASSWORD).toString();
+  const code  = CryptoJS.lib.WordArray.random(4).toString(); // 8-char id
+  const gistPayload = {description:'new order',public:true,files:{[`${code}.txt`]:{content:cipher}}};
+  await fetch('https://api.github.com/gists',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(gistPayload)});
 
-  // 5.  show customer
+  // 5. show customer
   document.getElementById('out').innerHTML = `
     <img src="${imgUrl}"><br>
     <b>€${cost}</b><br>
