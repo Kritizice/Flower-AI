@@ -4,10 +4,31 @@
   <meta charset="utf-8"/>
   <title>AI Bouquet Designer</title>
   <style>
-    body{font-family:Arial;background:#fdf2f2;margin:2rem}
-    textarea{width:100%;height:80px}
-    img{max-width:300px}
-    button{padding:.6rem 1.2rem;background:#e91e63;color:#fff;border:none;cursor:pointer}
+    :root{
+  --bg:       #fff9fb;
+  --card:     #ffffff;
+  --accent:   #e91e63;
+  --accent2:  #fce4ec;
+  --text:     #4a4a4a;
+  --shadow:   0 4px 20px rgba(0,0,0,.08);
+  --radius:   16px;
+  --font:     'Poppins', sans-serif;
+}
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;font-family:var(--font);}
+body{background:var(--bg);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;}
+.container{max-width:480px;width:100%;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:2rem;}
+h2{color:var(--accent);font-weight:600;margin-bottom:1rem;text-align:center;}
+label{font-size:.9rem;color:var(--text);margin-bottom:.5rem;display:block;}
+textarea{width:100%;min-height:100px;border:2px solid var(--accent2);border-radius:8px;padding:.75rem;font-size:1rem;resize:vertical;transition:border .2s;}
+textarea:focus{outline:none;border-color:var(--accent);}
+button{width:100%;padding:.85rem;font-size:1.1rem;font-weight:600;color:#fff;background:var(--accent);border:none;border-radius:8px;cursor:pointer;transition:background .2s;}
+button:hover{background:#d81b60;}
+#out{margin-top:1.5rem;}
+.card{background:var(--accent2);border-radius:var(--radius);padding:1rem;margin-top:1rem;line-height:1.6;}
+.card img{width:100%;border-radius:8px;margin-bottom:.75rem;}
+.price{font-size:1.4rem;font-weight:600;color:var(--accent);}
+.code{font-family:monospace;background:#fff;padding:2px 6px;border-radius:4px;}
   </style>
 </head>
 <body>
