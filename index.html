@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>AI Bouquet Designer</title>
+  <style>
+    body{font-family:Arial;background:#fdf2f2;margin:2rem}
+    textarea{width:100%;height:80px}
+    img{max-width:300px}
+    button{padding:.6rem 1.2rem;background:#e91e63;color:#fff;border:none;cursor:pointer}
+  </style>
+</head>
+<body>
+
+<h2>Describe your dream bouquet</h2>
+<textarea id="prompt" placeholder="e.g. romantic red and white with strawberries"></textarea><br>
+<button onclick="go()">Generate</button>
+<div id="out"></div>
+
+<script type="module">
+import {encrypt, decrypt} from 'https://cdn.skypack.dev/crypto-js';
+const GEMINI_KEY = 'AIzaSyASmcPbWxnG1gZElgCvmgUk5l07AUbhsfE';   // <— replace
+const HF_MODEL = 'stabilityai/stable-diffusion-xl-base-1.0';
+const STAFF_PASSWORD = 'myFlorist123';              // only YOU know this
+
+window.go = async () => {
+  const prompt = document.getElementById('prompt').value;
+  document.getElementById('out').innerText = 'Working…';
+
+  // 1.  structured recipe from Gemini
+  const gptResp = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_KEY}`,
+    {method:'POST',
+     headers:{'Content-Type':'application/json'},
+     body:JSON.stringify({
+       contents:[{parts:[{text:`You are a florist AI. Obey these rules:
+${JSON.stringify(await (await fetch('rules.json')).json(),null,2)}
+Return ONLY a JSON object like:
+{"flowers":[{"type":"","color":"","qty":}],"fruits":[{}],"style":"<short visual style>"}`}]},
+                  {parts:[{text:prompt}]}]})});
+  const recipe = (await gptResp.json()).candidates[0].content.parts[0].text
+                 .replace(/```json|```/g,'');
+  const r = JSON.parse(recipe);
+
+  // 2.  price
+  const rules = await (await fetch('rules.json')).json();
+  let cost=0;
+  r.flowers.forEach(f=> cost += f.qty * rules.priceStem[f.type]);
+  r.fruits.forEach(fr=> cost += fr.qty * rules.priceFruit[fr.type]);
+  cost = Math.round(cost * rules.profit * 100)/100;
+
+  // 3.  image
+  const imgPrompt = `Professional bouquet photo: ${r.style}. Flowers: ${
+    r.flowers.map(f=>`${f.qty} ${f.color} ${f.type}`).join(', ')
+  }. Fruits: ${r.fruits.map(fr=>`${fr.qty} ${fr.type}`).join(', ')}. Soft pastel background`;
+  const hf = await fetch(`https://api-inference.huggingface.co/models/${HF_MODEL}`,
+    {method:'POST',
+     headers:{'Authorization': 'Bearer '+ '0000000000000000000'}, // dummy token works for public SDXL
+     body:JSON.stringify({inputs:imgPrompt})});
+  const blob = await hf.blob();
+  const imgUrl = URL.createObjectURL(blob);
+
+  // 4.  encrypt & save
+  const cipher = encrypt(JSON.stringify({recipe:r,cost,imgPrompt}), STAFF_PASSWORD).toString();
+  const gistPayload = {description:'new order',public:true,files:{[`${nanoid(8)}.txt`]:{content:cipher}}};
+  await fetch('https://api.github.com/gists', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(gistPayload)});
+
+  // 5.  show customer
+  document.getElementById('out').innerHTML = `
+    <img src="${imgUrl}"><br>
+    <b>€${cost}</b><br>
+    Flowers: ${r.flowers.map(f=>`${f.qty} ${f.color} ${f.type}`).join(', ')}<br>
+    Fruits: ${r.fruits.map(fr=>`${fr.qty} ${fr.type}`).join(', ')}<br>
+    Your secret code: <code>${cipher.slice(0,8)}…</code> (show this at checkout)`;
+};
+</script>
+</body>
+</html>
