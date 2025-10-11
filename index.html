@@ -12,8 +12,9 @@
     h1{font-family:var(--font-head);font-size:2.2rem;color:var(--accent);text-align:center;margin-bottom:.5rem;}.tagline{font-size:1.1rem;text-align:center;margin-bottom:2rem;}
     label{font-size:1rem;font-weight:600;margin-bottom:.5rem;display:block;}textarea{width:100%;min-height:120px;border:3px solid var(--accent2);border-radius:12px;padding:1rem;font-size:1.1rem;resize:vertical;transition:border .3s;}textarea:focus{outline:none;border-color:var(--accent);}
     button{width:100%;padding:1rem;font-size:1.25rem;font-weight:600;color:#fff;background:var(--accent);border:none;border-radius:12px;cursor:pointer;transition:background .3s;margin-top:1rem;}button:hover{background:#600000;}
-    #out{margin-top:2rem;}.card{background:var(--accent2);border-radius:var(--radius);padding:1.5rem;font-size:1.1rem;}.price{font-size:1.75rem;font-weight:700;color:var(--accent);margin-bottom:.5rem;}
-    .code{font-family:monospace;background:var(--card);padding:3px 6px;border-radius:6px;font-weight:600;}.card p{margin:.4rem 0;}@media (max-width:600px){html{font-size:16px;}.container{padding:1.5rem 1rem;}h1{font-size:1.8rem;}}
+    #out{margin-top:2rem;}.card{background:var(--accent2);border-radius:var(--radius);padding:1.5rem;font-size:1.1rem;font-family:Candara, sans-serif;}/*Candara font for details*/
+    .price-row{display:flex;justify-content:space-between;align-items:center;}.price{font-size:1.75rem;font-weight:700;color:var(--accent);}.code{font-family:monospace;background:var(--card);padding:3px 6px;border-radius:6px;font-weight:600;}.card p{margin:.4rem 0;}
+    @media (max-width:600px){html{font-size:16px;}.container{padding:1.5rem 1rem;}h1{font-size:1.8rem;}}
     .error-card{background:#ffe6e6;border:2px solid var(--accent);}#loader{text-align:center;}.spinner{width:40px;height:40px;border:4px solid var(--accent2);border-top:4px solid var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 1rem;}@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
     .prog-bar{width:100%;height:10px;background:var(--accent2);border-radius:5px;overflow:hidden;margin:.5rem 0;}#progress{height:100%;background:var(--accent);width:0%;transition:width .2s;}#prog-txt{font-size:.95rem;}
     .popup-note{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--accent);color:#fff;padding:1rem 1.5rem;border-radius:8px;box-shadow:var(--shadow);font-size:.9rem;text-align:center;z-index:1000;animation:fadeIn .3s;}@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
@@ -26,7 +27,7 @@
   <p class="tagline">Tell us your style, colours, flowers or fruits — we’ll craft it!</p>
 
   <label for="prompt">Your idea</label>
-  <textarea id="prompt" placeholder="e.g. 10 red roses and 5 white strawberries"></textarea>
+  <textarea id="prompt" placeholder="Example: 10 red roses and 20 strawberries in red wrapping"></textarea>
 
   <button onclick="go()">Generate Bouquet</button>
 
@@ -39,7 +40,7 @@ import CryptoJS from 'https://cdn.skypack.dev/crypto-js';
 const OR_KEY        = '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'; // permanent OR key
 const STAFF_PASSWORD = 'myFlorist123';
 
-/* ==========  EDITABLE PRICES & LISTS  ========== */
+/* ==========  EDITABLE PRICES & LIMITS  ========== */
 // Change single-unit prices here ↓↓↓ (LKR per 1 item)
 const FLOWER_PRICE = {
   rose: 150,        // LKR 150 each
@@ -57,13 +58,14 @@ const FRUIT_PRICE = {
   physalis: 50
 };
 const PROFIT_MUL   = 1.45;                // 45 % margin
-const MAX_FLOWERS  = 12;                  // user max
-const MAX_FRUITS   = 7;                   // user max
-const MAX_TOTAL    = 20;                  // safety cap
+const MAX_FLOWERS  = 5000;                // user max (change here)
+const MAX_FRUITS   = 7000;                // user max (change here)
+const MAX_TOTAL    = 12000;               // safety cap (change here)
 
 /* ==========  MAIN FLOW  ========== */
 window.go = async () => {
   const prompt = document.getElementById('prompt').value;
+
   // popup note
   const popup = document.createElement('div');
   popup.className = 'popup-note';
@@ -71,7 +73,16 @@ window.go = async () => {
   document.body.appendChild(popup);
   setTimeout(()=>popup.remove(),3000);
 
-  document.getElementById('out').innerHTML = '<div class="card">Working…</div>';
+  // start progress bar immediately
+  const outDiv = document.getElementById('out');
+  outDiv.innerHTML = `
+    <div class="card">
+      <div id="loader">
+        <div class="spinner"></div>
+        <div class="prog-bar"><div id="progress" style="width:0%"></div></div>
+        <p id="prog-txt">0 % – Working on our magic !</p>
+      </div>
+    </div>`;
 
   // 1. load rules
   const rules = await (await fetch('rules.json')).json();
@@ -136,17 +147,6 @@ window.go = async () => {
   // 4. image with loader + progress (Pollinations, no key)
   const detailPrompt = `bouquet: ${recipe.flowers.map(f=>`${f.qty} ${f.color} ${f.type}`).join(', ')}, fruits: ${recipe.fruits.map(fr=>`${fr.qty} ${fr.type}`).join(', ')}, ${recipe.style}, maroon and off-white palette, 4k, photorealistic`;
 
-  // inject loader DOM
-  const outDiv = document.getElementById('out');
-  outDiv.innerHTML = `
-    <div class="card">
-      <div id="loader">
-        <div class="spinner"></div>
-        <div class="prog-bar"><div id="progress" style="width:0%"></div></div>
-        <p id="prog-txt">0 % – generating image…</p>
-      </div>
-    </div>`;
-
   // progress bar 0→100 % (fake smooth)
   let progress = 0;
   const progBar = document.getElementById('progress');
@@ -154,7 +154,7 @@ window.go = async () => {
   const progInt = setInterval(()=>{
     progress += 2;
     progBar.style.width = progress + '%';
-    progTxt.textContent  = progress + ' % – generating image…';
+    progTxt.textContent  = progress + ' % – Working on our magic !';
     if(progress >= 100){ clearInterval(progInt); progTxt.textContent = 'Almost done…'; }
   }, 60);
 
@@ -172,12 +172,13 @@ window.go = async () => {
         // FINAL DISPLAY: shows exact counts user asked for + final recipe
         const askedFlowerLines = recipe.flowers.map(f=>`${f.qty} ${f.color} ${f.type} (LKR ${FLOWER_PRICE[f.type]} each)`);
         const askedFruitLines  = recipe.fruits.map(fr=>`${fr.qty} ${fr.color} ${fr.type} (LKR ${FRUIT_PRICE[fr.type]} each)`);
+        const fruitsBlock = askedFruitLines.length ? `<p><strong>Fruits (as requested):</strong> ${askedFruitLines.join(', ')}</p>` : `<p><strong>Fruits:</strong> <em>unrequested</em></p>`;
         document.getElementById('out').innerHTML = `
           <div class="card">
             <img src="${img.src}" alt="bouquet preview">
-            <div class="price">Total LKR ${cost}</div>
+            <div class="price-row"><span>Total</span><span>LKR ${cost}</span></div>
             <p><strong>Flowers (as requested):</strong> ${askedFlowerLines.join(', ')}</p>
-            <p><strong>Fruits (as requested):</strong> ${askedFruitLines.join(', ')}</p>
+            ${fruitsBlock}
             <p><strong>Shop code:</strong> <span class="code">${cipher.slice(0,8)}…</span><br><small>Show this at checkout</small></p>
           </div>`;
       });
