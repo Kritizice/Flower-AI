@@ -1,0 +1,11 @@
+{
+  "maxFlowers": 12,
+  "minFlowers": 5,
+  "allowedColors": ["red", "white", "pink", "yellow"],
+  "allowedFlowers": ["rose", "tulip", "chrysanthemum", "carnation"],
+  "allowedFruits": ["strawberry", "blueberry"],
+  "maxFruits": 5,
+  "priceStem": { "rose": 2, "tulip": 1.5, "chrysanthemum": 1, "carnation": 1.2 },
+  "priceFruit": { "strawberry": 0.6, "blueberry": 0.4 },
+  "profit": 1.4
+}
