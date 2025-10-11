@@ -20,7 +20,7 @@
 <script type="module">
 import CryptoJS from 'https://cdn.skypack.dev/crypto-js';
 
-const OR_KEY        = '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'; // ← your permanent OR key
+const OR_KEY        = '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'; // your permanent OR key
 const STAFF_PASSWORD = 'myFlorist123';
 
 window.go = async () => {
@@ -30,7 +30,7 @@ window.go = async () => {
   // 1. load shop rules
   const rules = await (await fetch('rules.json')).json();
 
-  // 2. ask OpenRouter (Gemini-2-free tier)
+  // 2. ask OpenRouter (DeepSeek-free tier today)
   const reply = await fetch('https://openrouter.ai/api/v1/chat/completions',{
     method : 'POST',
     headers: {
@@ -40,7 +40,7 @@ window.go = async () => {
       'X-Title'       : 'Flower-AI'
     },
     body: JSON.stringify({
-      model: 'google/gemini-2.0-flash-exp:free',
+      model: 'deepseek/deepseek-r1-distill-llama-70b:free',   // free today
       messages:[
         {role:'system', content:`You are a florist AI. Obey these rules:\n${JSON.stringify(rules,null,2)}\nReturn ONLY this JSON shape:\n{"flowers":[{"type":"","color":"","qty":}],"fruits":[{}],"style":""}`},
         {role:'user',   content: prompt}
