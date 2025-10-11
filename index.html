@@ -37,8 +37,14 @@
 <script type="module">
 import CryptoJS from 'https://cdn.skypack.dev/crypto-js';
 
-const OR_KEY        = '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'; // permanent OR key
-const STAFF_PASSWORD = 'myFlorist123';
+/* ==========  TEMP DEMO while key is hidden  ========== */
+const STAFF_PASSWORD = 'myFlorist123';   // keep encryption only
+const demo = {
+  flowers:[{type:'rose',color:'red',qty:10},{type:'tulip',color:'white',qty:5}],
+  fruits:[{type:'strawberry',qty:20}],
+  style:'romantic pastel wrap'
+};
+const recipe = demo;   // use hard-coded bouquet
 
 /* ==========  EDITABLE PRICES & LIMITS  ========== */
 // Change single-unit prices here ↓↓↓ (LKR per 1 item)
