@@ -19,7 +19,7 @@
 
 <script type="module">
 import CryptoJS from 'https://cdn.skypack.dev/crypto-js';
-const GEMINI_KEY = 'AIzaSyBc6K27qOujVdKafm0pK5JU_05X7vclJyU';   // <— replace
+const GEMINI_KEY = 'AIzaSyDbq9wXqyTfFVAnjn-_d66SkKYZUJ4mbjI';   // <— replace
 const HF_MODEL = 'stabilityai/stable-diffusion-xl-base-1.0';
 const STAFF_PASSWORD = 'myFlorist123';              // only YOU know this
 
@@ -50,13 +50,8 @@ Return ONLY a JSON object like:
   cost = Math.round(cost * rules.profit * 100)/100;
 
   // 3.  image
-  const imgPrompt = `Professional bouquet photo: ${r.style}. Flowers: ${
-    r.flowers.map(f=>`${f.qty} ${f.color} ${f.type}`).join(', ')
-  }. Fruits: ${r.fruits.map(fr=>`${fr.qty} ${fr.type}`).join(', ')}. Soft pastel background`;
-  const imgPrompt = `Professional bouquet photo: ${r.style}. Flowers: ${
-  r.flowers.map(f=>`${f.qty} ${f.color} ${f.type}`).join(', ')
-  }. Fruits: ${r.fruits.map(fr=>`${fr.qty} ${fr.type}`).join(', ')}. Soft pastel background`;
-  const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(imgPrompt)}?width=1024&height=1024&nologo=1`;
+  const safePrompt = `bouquet, ${r.totalFlowers} flowers, ${r.totalFruits} fruits, ${r.style}, pastel background, 4k`;
+  const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(safePrompt)}?width=1024&height=1024&nologo=1`;
 
   // 4.  encrypt & save
   const cipher = CryptoJS.AES.encrypt(JSON.stringify({recipe:r,cost,imgPrompt}), STAFF_PASSWORD).toString();
