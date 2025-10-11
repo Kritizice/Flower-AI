@@ -5,48 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>AI Bouquet Designer</title>
   <style>
-    :root{
-      --bg:         #fdf6f0;
-      --card:       #ffffff;
-      --accent:     #800000;
-      --accent2:    #f5e6e6;
-      --text:       #3d2914;
-      --shadow:     0 6px 30px rgba(0,0,0,.08);
-      --radius:     20px;
-      --font-head:  'Playfair Display', serif;
-      --font-body:  'Poppins', sans-serif;
-    }
+    :root{--bg:#fdf6f0;--card:#fff;--accent:#800000;--accent2:#f5e6e6;--text:#3d2914;--shadow:0 6px 30px rgba(0,0,0,.08);--radius:20px;--font-head:'Playfair Display',serif;--font-body:'Poppins',sans-serif;}
     @import url('https://fonts.googleapis.com/css2?family=Playfair Display:wght@700&family=Poppins:wght@400;600&display=swap');
-    *{box-sizing:border-box;margin:0;padding:0;}
-    html{font-size:18px;}
-    body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem 1rem;line-height:1.6;}
-    img{max-width:100%;border-radius:var(--radius);}
-    .container{max-width:520px;width:100%;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:2.5rem 2rem;}
-    h1{font-family:var(--font-head);font-size:2.2rem;color:var(--accent);text-align:center;margin-bottom:.5rem;}
-    .tagline{font-size:1.1rem;text-align:center;margin-bottom:2rem;}
-    label{font-size:1rem;font-weight:600;margin-bottom:.5rem;display:block;}
-    textarea{width:100%;min-height:120px;border:3px solid var(--accent2);border-radius:12px;padding:1rem;font-size:1.1rem;resize:vertical;transition:border .3s;}
-    textarea:focus{outline:none;border-color:var(--accent);}
-    button{width:100%;padding:1rem;font-size:1.25rem;font-weight:600;color:#fff;background:var(--accent);border:none;border-radius:12px;cursor:pointer;transition:background .3s;margin-top:1rem;}
-    button:hover{background:#600000;}
-    #out{margin-top:2rem;}
-    .card{background:var(--accent2);border-radius:var(--radius);padding:1.5rem;font-size:1.1rem;}
-    .price{font-size:1.75rem;font-weight:700;color:var(--accent);margin-bottom:.5rem;}
-    .code{font-family:monospace;background:var(--card);padding:3px 6px;border-radius:6px;font-weight:600;}
-    .card p{margin:.4rem 0;}
-    @media (max-width:600px){
-      html{font-size:16px;}
-      .container{padding:1.5rem 1rem;}
-      h1{font-size:1.8rem;}
-    }
-    .error-card{background:#ffe6e6;border:2px solid var(--accent);}
-    /* ---------- LOADER ---------- */
-    #loader{text-align:center;}
-    .spinner{width:40px;height:40px;border:4px solid var(--accent2);border-top:4px solid var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 1rem;}
-    @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
-    .prog-bar{width:100%;height:10px;background:var(--accent2);border-radius:5px;overflow:hidden;margin:.5rem 0;}
-    #progress{height:100%;background:var(--accent);width:0%;transition:width .2s;}
-    #prog-txt{font-size:.95rem;}
+    *{box-sizing:border-box;margin:0;padding:0;}html{font-size:18px;}body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem 1rem;line-height:1.6;}
+    img{max-width:100%;border-radius:var(--radius);}.container{max-width:520px;width:100%;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:2.5rem 2rem;}
+    h1{font-family:var(--font-head);font-size:2.2rem;color:var(--accent);text-align:center;margin-bottom:.5rem;}.tagline{font-size:1.1rem;text-align:center;margin-bottom:2rem;}
+    label{font-size:1rem;font-weight:600;margin-bottom:.5rem;display:block;}textarea{width:100%;min-height:120px;border:3px solid var(--accent2);border-radius:12px;padding:1rem;font-size:1.1rem;resize:vertical;transition:border .3s;}textarea:focus{outline:none;border-color:var(--accent);}
+    button{width:100%;padding:1rem;font-size:1.25rem;font-weight:600;color:#fff;background:var(--accent);border:none;border-radius:12px;cursor:pointer;transition:background .3s;margin-top:1rem;}button:hover{background:#600000;}
+    #out{margin-top:2rem;}.card{background:var(--accent2);border-radius:var(--radius);padding:1.5rem;font-size:1.1rem;}.price{font-size:1.75rem;font-weight:700;color:var(--accent);margin-bottom:.5rem;}
+    .code{font-family:monospace;background:var(--card);padding:3px 6px;border-radius:6px;font-weight:600;}.card p{margin:.4rem 0;}@media (max-width:600px){html{font-size:16px;}.container{padding:1.5rem 1rem;}h1{font-size:1.8rem;}}
+    .error-card{background:#ffe6e6;border:2px solid var(--accent);}#loader{text-align:center;}.spinner{width:40px;height:40px;border:4px solid var(--accent2);border-top:4px solid var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 1rem;}@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+    .prog-bar{width:100%;height:10px;background:var(--accent2);border-radius:5px;overflow:hidden;margin:.5rem 0;}#progress{height:100%;background:var(--accent);width:0%;transition:width .2s;}#prog-txt{font-size:.95rem;}
+    .popup-note{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--accent);color:#fff;padding:1rem 1.5rem;border-radius:8px;box-shadow:var(--shadow);font-size:.9rem;text-align:center;z-index:1000;animation:fadeIn .3s;}@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
   </style>
 </head>
 <body>
@@ -69,11 +39,38 @@ import CryptoJS from 'https://cdn.skypack.dev/crypto-js';
 const OR_KEY        = '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'; // permanent OR key
 const STAFF_PASSWORD = 'myFlorist123';
 
-/* ==========  FRONT-DOOR VALIDATOR  ========== */
-const MAX_TOTAL  = 20;                    // safety cap (change here)
+/* ==========  EDITABLE PRICES & LISTS  ========== */
+// Change single-unit prices here ↓↓↓ (LKR per 1 item)
+const FLOWER_PRICE = {
+  rose: 150,        // LKR 150 each
+  tulip: 120,
+  chrysanthemum: 100,
+  carnation: 110,
+  peony: 200,
+  lisianthus: 130
+};
+const FRUIT_PRICE = {
+  strawberry: 40,   // LKR 40 each
+  blueberry: 30,
+  raspberry: 45,
+  grape: 35,
+  physalis: 50
+};
+const PROFIT_MUL   = 1.45;                // 45 % margin
+const MAX_FLOWERS  = 12;                  // user max
+const MAX_FRUITS   = 7;                   // user max
+const MAX_TOTAL    = 20;                  // safety cap
 
+/* ==========  MAIN FLOW  ========== */
 window.go = async () => {
   const prompt = document.getElementById('prompt').value;
+  // popup note
+  const popup = document.createElement('div');
+  popup.className = 'popup-note';
+  popup.innerHTML = 'AI can make mistakes.<br>Contact employee for help / updates.';
+  document.body.appendChild(popup);
+  setTimeout(()=>popup.remove(),3000);
+
   document.getElementById('out').innerHTML = '<div class="card">Working…</div>';
 
   // 1. load rules
@@ -82,10 +79,9 @@ window.go = async () => {
   /* ---- validator: counts & colours ---- */
   const userLower  = prompt.toLowerCase();
 
-  // build regex from allowed lists (easy to edit)
-  const flowerWords = rules.allowedFlowers.join('|');   // allowed flower names
-  const fruitWords  = rules.allowedFruits.join('|');    // allowed fruit names
-  const colourWords = rules.allowedColors.join('|');    // allowed colours
+  const flowerWords = Object.keys(FLOWER_PRICE).join('|'); // editable list
+  const fruitWords  = Object.keys(FRUIT_PRICE).join('|');  // editable list
+  const colourWords = rules.allowedColors.join('|');
 
   // count flowers / fruits user asked for
   const flowerCount = (userLower.match(new RegExp(`\\b(\\d+)\\s+(?:${flowerWords})`,'g')) || [])
@@ -93,23 +89,21 @@ window.go = async () => {
   const fruitCount  = (userLower.match(new RegExp(`\\b(\\d+)\\s+(?:${fruitWords})`,'g')) || [])
                         .reduce((sum,m)=>sum+Number(m.split(' ')[0]),0);
 
-  // detect unknown colours
   const unknownColour = userLower.match(new RegExp(`\\b(${colourWords}|red|blue|green|yellow|pink|white|pastel|burgundy|maroon|cream|peach)\\b`,'gi')) &&
                         userLower.match(new RegExp(`\\b(${colourWords}|red|blue|green|yellow|pink|white|pastel|burgundy|maroon|cream|peach)\\b`,'gi'))
                                .some(c=> !rules.allowedColors.map(x=>x.toLowerCase()).includes(c.toLowerCase()));
 
-  // ---- decision ----
-  if(flowerCount>rules.maxFlowers || fruitCount>rules.maxFruits || (flowerCount+fruitCount)>MAX_TOTAL || unknownColour){
+  if(flowerCount>MAX_FLOWERS || fruitCount>MAX_FRUITS || (flowerCount+fruitCount)>MAX_TOTAL || unknownColour){
     document.getElementById('out').innerHTML =
      `<div class="card error-card">
         <strong>⚠️ Oops!</strong><br>
-        ${flowerCount>rules.maxFlowers ? `Max flowers allowed: ${rules.maxFlowers}. ` : ''}
-        ${fruitCount>rules.maxFruits  ? `Max fruits allowed: ${rules.maxFruits}. ` : ''}
+        ${flowerCount>MAX_FLOWERS ? `Max flowers allowed: ${MAX_FLOWERS}. ` : ''}
+        ${fruitCount>MAX_FRUITS  ? `Max fruits allowed: ${MAX_FRUITS}. ` : ''}
         ${(flowerCount+fruitCount)>MAX_TOTAL ? `Total items too high (max ${MAX_TOTAL}). ` : ''}
         ${unknownColour ? `Only these colours: ${rules.allowedColors.join(', ')}. ` : ''}
         <br><small>Please adjust your description and try again.</small>
       </div>`;
-    return; // stop here — AI never called
+    return;
   }
 
   // 2. ask OpenRouter (DeepSeek-free tier today)
@@ -122,7 +116,7 @@ window.go = async () => {
       'X-Title'       : 'Flower-AI'
     },
     body: JSON.stringify({
-      model: 'deepseek/deepseek-r1-distill-llama-70b:free',   // free today
+      model: 'deepseek/deepseek-r1-distill-llama-70b:free',
       messages:[
         {role:'system', content:`You are a florist AI. Obey these rules:\n${JSON.stringify(rules,null,2)}\nReturn ONLY this JSON shape:\n{"flowers":[{"type":"","color":"","qty":}],"fruits":[{}],"style":""}`},
         {role:'user',   content: prompt}
@@ -130,14 +124,14 @@ window.go = async () => {
     })
   });
   let raw = (await reply.json()).choices[0].message.content;
-  raw = raw.slice(raw.indexOf('{'), raw.lastIndexOf('}') + 1); // keep only {…}
+  raw = raw.slice(raw.indexOf('{'), raw.lastIndexOf('}') + 1);
   const recipe = JSON.parse(raw);
 
-  // 3. price   (edit prices here ↓↓↓)
+  // 3. price   (uses editable lists above ↑↑↑)
   let cost = 0;
-  recipe.flowers.forEach(f => cost += f.qty * rules.priceStem[f.type]); // stem prices
-  recipe.fruits.forEach(fr => cost += fr.qty * rules.priceFruit[fr.type]); // fruit prices
-  cost = Math.round(cost * rules.profit * 100) / 100; // profit margin
+  recipe.flowers.forEach(f => cost += f.qty * FLOWER_PRICE[f.type]); // user qty × unit price
+  recipe.fruits.forEach(fr => cost += fr.qty * FRUIT_PRICE[fr.type]); // user qty × unit price
+  cost = Math.round(cost * PROFIT_MUL * 100) / 100; // profit margin
 
   // 4. image with loader + progress (Pollinations, no key)
   const detailPrompt = `bouquet: ${recipe.flowers.map(f=>`${f.qty} ${f.color} ${f.type}`).join(', ')}, fruits: ${recipe.fruits.map(fr=>`${fr.qty} ${fr.type}`).join(', ')}, ${recipe.style}, maroon and off-white palette, 4k, photorealistic`;
@@ -176,8 +170,8 @@ window.go = async () => {
     return fetch('https://api.github.com/gists',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(gistPayload)})
       .then(()=>{
         // FINAL DISPLAY: shows exact counts user asked for + final recipe
-        const askedFlowerLines = recipe.flowers.map(f=>`${f.qty} ${f.color} ${f.type}`);
-        const askedFruitLines  = recipe.fruits.map(fr=>`${fr.qty} ${fr.type}`);
+        const askedFlowerLines = recipe.flowers.map(f=>`${f.qty} ${f.color} ${f.type} (LKR ${FLOWER_PRICE[f.type]} each)`);
+        const askedFruitLines  = recipe.fruits.map(fr=>`${fr.qty} ${fr.color} ${fr.type} (LKR ${FRUIT_PRICE[fr.type]} each)`);
         document.getElementById('out').innerHTML = `
           <div class="card">
             <img src="${img.src}" alt="bouquet preview">
